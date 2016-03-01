@@ -24,6 +24,8 @@ class HomeViewController: UIViewController {
     var locationManager: CLLocationManager?
     var footprint: [(Double, Double)] = []
     var geocoder: CLGeocoder = CLGeocoder()
+    var inRegion: Bool = false
+    var annotation: Annotation?
 
     override func viewDidLoad() {
         print(__FUNCTION__ + " : "+String(__LINE__))
@@ -40,8 +42,17 @@ class HomeViewController: UIViewController {
        
     }
     
+    override func viewWillDisappear(animated: Bool) {
+        if let lm = locationManager {
+            if CLLocationManager.locationServicesEnabled() {
+                lm.stopUpdatingLocation()
+            }
+        }
+    }
+    
     func updateLocation() {
         print(__FUNCTION__ + " : "+String(__LINE__))
+        inRegion = true
         if let lm = locationManager {
             if CLLocationManager.locationServicesEnabled() {
                 lm.startUpdatingLocation()
@@ -160,8 +171,14 @@ extension HomeViewController: CLLocationManagerDelegate {
         let la = min(span.latitudeDelta, 0.1)
         let lo = min(span.longitudeDelta, 0.1)
         span = MKCoordinateSpan(latitudeDelta: la, longitudeDelta: lo)
+        
         addAnnotation(newLocation)
         
+    }
+    
+    
+    func locationManagerShouldDisplayHeadingCalibration(manager: CLLocationManager) -> Bool {
+        return true
     }
     
     func locationManager(manager: CLLocationManager, didFailWithError error: NSError) {
@@ -170,10 +187,13 @@ extension HomeViewController: CLLocationManagerDelegate {
     
     func addAnnotation(newLocation: CLLocation) {
         print(__FUNCTION__ + " : "+String(__LINE__))
-        let anno = Annotation(coordinate: center, title: "我在这里", subtitle: nil)
+        if let anno = annotation {
+            mapView.removeAnnotation(anno)
+        }
+        annotation = Annotation(coordinate: center, title: "我在这里", subtitle: nil)
         mapView.centerCoordinate = center
         mapView.region = MKCoordinateRegion(center: center, span: span)
-        mapView.addAnnotation(anno)
+        mapView.addAnnotation(annotation!)
     }
 }
 
@@ -193,12 +213,19 @@ extension HomeViewController: MKMapViewDelegate {
     
     func mapView(mapView: MKMapView, didUpdateUserLocation userLocation: MKUserLocation) {
         print(__FUNCTION__ + " : "+String(__LINE__))
-        if let center = userLocation.location?.coordinate {
-            self.center = center
-            let region = MKCoordinateRegionMake(center, span)
-        
-            mapView.setRegion(region, animated: true)
-            setLocationDescription(userLocation.location)
+        if inRegion {
+            inRegion = false
+            if let center = userLocation.location?.coordinate {
+                self.center = center
+                let region = MKCoordinateRegionMake(center, span)
+            
+                mapView.setRegion(region, animated: true)
+                setLocationDescription(userLocation.location)
+            }
         }
+    }
+    
+    func mapView(mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
+        
     }
 }

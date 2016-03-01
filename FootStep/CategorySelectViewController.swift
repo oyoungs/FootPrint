@@ -20,7 +20,7 @@ class CategorySelectViewController: UITableViewController {
             }
         }
     }
-    var selectedIndex: Int = -1
+    var selectedIndex: Int = 0
     var categories: [String] = [ "未分类"
         ,"苹果商店"
         ,"酒吧"

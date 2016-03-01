@@ -9,16 +9,13 @@
 import UIKit
 import CoreLocation
 
-enum ShareCategory {
-    case None
-    case Bar
-}
+
 
 class ShareContent {
-    var location: CLLocation
-    var desciption: String = ""
-    var category: ShareCategory = .None
-    init(location: CLLocation) {
-        self.location = location
-    }
+    var longitude: Double = 0
+    var latitude: Double = 0
+    var date: NSDate = NSDate()
+    var information: String = ""
+    var category: String = "未分类"
+    var address: String = ""
 }

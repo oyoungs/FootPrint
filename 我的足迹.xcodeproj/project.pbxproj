@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E300FEA31C8438D9001517DB /* ShareContentObject+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = E300FEA11C8438D9001517DB /* ShareContentObject+CoreDataProperties.swift */; };
+		E300FEA61C845FE2001517DB /* ShareContentObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = E300FEA51C845FE2001517DB /* ShareContentObject.swift */; };
 		E317D9541C7D751300D48E52 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E317D9531C7D751300D48E52 /* AppDelegate.swift */; };
 		E317D95B1C7D751300D48E52 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E317D9591C7D751300D48E52 /* Main.storyboard */; };
 		E317D95D1C7D751300D48E52 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E317D95C1C7D751300D48E52 /* Assets.xcassets */; };
@@ -25,6 +27,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		E300FEA11C8438D9001517DB /* ShareContentObject+CoreDataProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ShareContentObject+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		E300FEA51C845FE2001517DB /* ShareContentObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ShareContentObject.swift; sourceTree = "<group>"; };
 		E317D9501C7D751300D48E52 /* 我的足迹.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "我的足迹.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E317D9531C7D751300D48E52 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		E317D95A1C7D751300D48E52 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -92,6 +96,8 @@
 				E317D95E1C7D751300D48E52 /* LaunchScreen.storyboard */,
 				E317D9611C7D751300D48E52 /* Info.plist */,
 				E34F08D11C800151000A46F0 /* Model.xcdatamodeld */,
+				E300FEA51C845FE2001517DB /* ShareContentObject.swift */,
+				E300FEA11C8438D9001517DB /* ShareContentObject+CoreDataProperties.swift */,
 			);
 			path = FootStep;
 			sourceTree = "<group>";
@@ -187,11 +193,13 @@
 				E34F08D01C7FFA49000A46F0 /* ShareContent.swift in Sources */,
 				E317D9541C7D751300D48E52 /* AppDelegate.swift in Sources */,
 				E34F08D31C800151000A46F0 /* Model.xcdatamodeld in Sources */,
+				E300FEA61C845FE2001517DB /* ShareContentObject.swift in Sources */,
 				E3D30C931C803AC400E8065C /* CategorySelectViewController.swift in Sources */,
 				E317D9711C7D799C00D48E52 /* CenterViewController.swift in Sources */,
 				E317D9691C7D76E200D48E52 /* MainViewController.swift in Sources */,
 				E3D30C911C802C5800E8065C /* ShareViewController.swift in Sources */,
 				E34F08D61C800242000A46F0 /* CoreDataManager.swift in Sources */,
+				E300FEA31C8438D9001517DB /* ShareContentObject+CoreDataProperties.swift in Sources */,
 				E317D96D1C7D78BB00D48E52 /* HomeViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

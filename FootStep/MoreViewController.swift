@@ -11,12 +11,19 @@ import CoreLocation
 
 
 class MoreViewController: UIViewController {
+    @IBOutlet weak var tableView: UITableView!
 
     var dataSource: [ShareContent] = []
+    var coreDataManager: CoreDataManager = CoreDataManager()
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        tableView.delegate = self
+        tableView.dataSource = self
+    }
+    
+    override func viewWillAppear(animated: Bool) {
+        tableViewReloadData()
     }
 
     override func didReceiveMemoryWarning() {
@@ -30,11 +37,11 @@ class MoreViewController: UIViewController {
     
     func tableViewReloadData() {
         dataSourceUpdate()
-        
+        tableView.reloadData()
     }
     
     func dataSourceUpdate() {
-        
+            dataSource = coreDataManager.findAll()
     }
   
 }
@@ -47,16 +54,18 @@ extension MoreViewController: UITableViewDelegate, UITableViewDataSource {
         return 1
     }
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 1
+        return dataSource.count
     }
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         let identifier = "shareCell"
         var cell = tableView.dequeueReusableCellWithIdentifier(identifier)
         if cell == nil {
-            cell = UITableViewCell(style: .Default, reuseIdentifier: identifier)
+            cell = UITableViewCell(style: .Subtitle, reuseIdentifier: identifier)
         }
         
+        cell?.textLabel?.text = dataSource[indexPath.row].information
+        cell?.detailTextLabel?.text = dataSource[indexPath.row].address
         return cell!
     }
 }
