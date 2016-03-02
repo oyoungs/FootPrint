@@ -61,7 +61,7 @@ class CategorySelectViewController: UITableViewController {
 
     
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let identifier = "cell"
+        let identifier = "CategoryCell"
         var cell = tableView.dequeueReusableCellWithIdentifier(identifier)
         if cell == nil {
             cell = UITableViewCell(style: .Default, reuseIdentifier: identifier)
@@ -69,6 +69,7 @@ class CategorySelectViewController: UITableViewController {
         let text = categories[indexPath.row]
         cell!.textLabel?.text = text
         cell!.accessoryType = text == selectText ? .Checkmark : .None
+        cell?.layer.cornerRadius = 6
         return cell!
     }
     

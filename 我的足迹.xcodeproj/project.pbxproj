@@ -19,6 +19,7 @@
 		E317D9741C7D7BA500D48E52 /* MoreViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E317D9731C7D7BA500D48E52 /* MoreViewController.swift */; };
 		E317D9761C7D924C00D48E52 /* MapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E317D9751C7D924C00D48E52 /* MapKit.framework */; };
 		E317D9781C7D981B00D48E52 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E317D9771C7D981B00D48E52 /* CoreLocation.framework */; };
+		E33CBD181C85591200B08004 /* ShareCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E33CBD171C85591200B08004 /* ShareCell.swift */; };
 		E34F08D01C7FFA49000A46F0 /* ShareContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = E34F08CF1C7FFA49000A46F0 /* ShareContent.swift */; };
 		E34F08D31C800151000A46F0 /* Model.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = E34F08D11C800151000A46F0 /* Model.xcdatamodeld */; };
 		E34F08D61C800242000A46F0 /* CoreDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E34F08D51C800242000A46F0 /* CoreDataManager.swift */; };
@@ -41,6 +42,7 @@
 		E317D9731C7D7BA500D48E52 /* MoreViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MoreViewController.swift; sourceTree = "<group>"; };
 		E317D9751C7D924C00D48E52 /* MapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapKit.framework; path = System/Library/Frameworks/MapKit.framework; sourceTree = SDKROOT; };
 		E317D9771C7D981B00D48E52 /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
+		E33CBD171C85591200B08004 /* ShareCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ShareCell.swift; sourceTree = "<group>"; };
 		E34F08CF1C7FFA49000A46F0 /* ShareContent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ShareContent.swift; sourceTree = "<group>"; };
 		E34F08D21C800151000A46F0 /* Model.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Model.xcdatamodel; sourceTree = "<group>"; };
 		E34F08D51C800242000A46F0 /* CoreDataManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoreDataManager.swift; sourceTree = "<group>"; };
@@ -87,6 +89,7 @@
 				E317D9531C7D751300D48E52 /* AppDelegate.swift */,
 				E317D9671C7D76E200D48E52 /* MainViewController.swift */,
 				E317D9731C7D7BA500D48E52 /* MoreViewController.swift */,
+				E33CBD171C85591200B08004 /* ShareCell.swift */,
 				E317D96F1C7D799C00D48E52 /* CenterViewController.swift */,
 				E317D96B1C7D78BB00D48E52 /* HomeViewController.swift */,
 				E3D30C901C802C5800E8065C /* ShareViewController.swift */,
@@ -150,6 +153,7 @@
 				TargetAttributes = {
 					E317D94F1C7D751300D48E52 = {
 						CreatedOnToolsVersion = 7.2.1;
+						DevelopmentTeam = KU6CRSME2C;
 					};
 				};
 			};
@@ -193,6 +197,7 @@
 				E34F08D01C7FFA49000A46F0 /* ShareContent.swift in Sources */,
 				E317D9541C7D751300D48E52 /* AppDelegate.swift in Sources */,
 				E34F08D31C800151000A46F0 /* Model.xcdatamodeld in Sources */,
+				E33CBD181C85591200B08004 /* ShareCell.swift in Sources */,
 				E300FEA61C845FE2001517DB /* ShareContentObject.swift in Sources */,
 				E3D30C931C803AC400E8065C /* CategorySelectViewController.swift in Sources */,
 				E317D9711C7D799C00D48E52 /* CenterViewController.swift in Sources */,
@@ -311,6 +316,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				INFOPLIST_FILE = FootStep/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -320,6 +327,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = hdu.edu.FootStep;
 				PRODUCT_NAME = "我的足迹";
+				PROVISIONING_PROFILE = "";
 			};
 			name = Debug;
 		};
@@ -327,6 +335,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				INFOPLIST_FILE = FootStep/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -336,6 +346,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = hdu.edu.FootStep;
 				PRODUCT_NAME = "我的足迹";
+				PROVISIONING_PROFILE = "";
 			};
 			name = Release;
 		};

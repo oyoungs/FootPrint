@@ -16,7 +16,7 @@ class ShareViewController: UITableViewController {
     @IBOutlet weak var latitudeLabel: UILabel!
     @IBOutlet weak var locationLabel: UILabel!
     @IBOutlet weak var timeLabel: UILabel!
-    @IBOutlet weak var informationText: UITextField!
+    @IBOutlet weak var informationText: UITextView!
     
     private var geocoder: CLGeocoder = CLGeocoder()
     private var locationManager: CLLocationManager?
@@ -26,12 +26,29 @@ class ShareViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupLocationManager(delegate: self)
+        addTouchHandler()
     }
+
     
     override func viewWillAppear(animated: Bool) {
         updateLoacation()
     }
     
+    func addTouchHandler() {
+        let tap = UITapGestureRecognizer(target: self, action: Selector("viewTouch:"))
+        tap.numberOfTapsRequired = 1
+        tap.numberOfTouchesRequired = 1
+        tap.delegate = self
+        view.addGestureRecognizer(tap)
+    }
+    
+    func viewTouch(sender: UITapGestureRecognizer) {
+        guard let view = sender.view else { return }
+        guard !view.isKindOfClass(UITextView) else { return}
+        if informationText.isFirstResponder() {
+            informationText.resignFirstResponder()
+        }
+    }
     func loadInfomation() {
         let formatter = NSDateFormatter()
         formatter.dateStyle = .MediumStyle
@@ -77,6 +94,17 @@ class ShareViewController: UITableViewController {
         }
     }
     
+    
+    
+    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+        guard indexPath.section == 1 else {return}
+        showActionSheet()
+    }
+    
+    func showActionSheet() {
+        let action: UIActionSheet = UIActionSheet(title: "选择图片来源", delegate: self, cancelButtonTitle: "取消", destructiveButtonTitle: nil, otherButtonTitles: "从相册选取", "拍照")
+        action.showInView(view)
+    }
 
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         if let sender = sender {
@@ -105,6 +133,83 @@ class ShareViewController: UITableViewController {
 
 }
 
+extension ShareViewController: UITextViewDelegate {
+    func textViewDidBeginEditing(textView: UITextView) {
+        if textView.text == "添加描述信息" {
+            textView.text = ""
+            textView.textColor = UIColor.blackColor()
+        }
+    }
+}
+
+extension ShareViewController: UIActionSheetDelegate {
+  
+    
+    func actionSheet(actionSheet: UIActionSheet, clickedButtonAtIndex buttonIndex: Int) {
+        switch buttonIndex {
+        case 1:
+            localSelect()
+        case 2:
+            takePhoto()
+        default:break
+        }
+    }
+    
+    func  takePhoto() {
+        let sourceType: UIImagePickerControllerSourceType = .Camera
+        if UIImagePickerController.isSourceTypeAvailable(sourceType) {
+            let  picker = UIImagePickerController()
+            picker.delegate = self
+            picker.allowsEditing = true
+            picker.sourceType = sourceType
+            presentViewController(picker, animated: true, completion: nil)
+        } else {
+            let alert: UIAlertController = UIAlertController(title: "提示", message: "模拟器相机不可用，请使用真机", preferredStyle: UIAlertControllerStyle.Alert)
+            let action: UIAlertAction = UIAlertAction(title: "好的", style: UIAlertActionStyle.Cancel, handler: nil)
+            alert.addAction(action)
+            presentViewController(alert, animated: true, completion: nil)
+        }
+    }
+    
+    func localSelect() {
+        let picker = UIImagePickerController()
+        picker.sourceType = .PhotoLibrary
+        picker.delegate = self
+        picker.allowsEditing = true
+        presentViewController(picker, animated: true, completion: nil)
+    }
+}
+
+extension ShareViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    func imagePickerController(picker: UIImagePickerController, didFinishPickingImage image: UIImage, editingInfo: [String : AnyObject]?) {
+        
+    }
+    
+    func imagePickerController(picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : AnyObject]) {
+        print(info)
+        let type = info[UIImagePickerControllerMediaType] as? String
+        if type == "public.image" {
+            
+        }
+        picker.dismissViewControllerAnimated(true, completion: nil)
+    }
+    
+    func imagePickerControllerDidCancel(picker: UIImagePickerController) {
+        print("取消选择")
+        picker.dismissViewControllerAnimated(true, completion: nil)
+    }
+}
+
+extension ShareViewController: UIGestureRecognizerDelegate {
+    func gestureRecognizer(gestureRecognizer: UIGestureRecognizer, shouldReceiveTouch touch: UITouch) -> Bool {
+        guard let view = touch .view else { return  false}
+        guard !view.isKindOfClass(UITextView) else { return false}
+        if informationText.isFirstResponder() {
+            informationText.resignFirstResponder()
+        }
+        return false
+    }
+}
 
 extension ShareViewController: CLLocationManagerDelegate {
     

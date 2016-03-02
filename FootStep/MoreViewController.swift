@@ -51,21 +51,26 @@ extension MoreViewController: UITableViewDelegate, UITableViewDataSource {
     
     //dataSource
     func numberOfSectionsInTableView(tableView: UITableView) -> Int {
-        return 1
+        return dataSource.count
     }
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return dataSource.count
+        return 1
+    }
+
+    
+    func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+        return 88
     }
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         let identifier = "shareCell"
-        var cell = tableView.dequeueReusableCellWithIdentifier(identifier)
+        var cell = tableView.dequeueReusableCellWithIdentifier(identifier) as? ShareCell
         if cell == nil {
-            cell = UITableViewCell(style: .Subtitle, reuseIdentifier: identifier)
+            cell = ShareCell(style: .Subtitle, reuseIdentifier: identifier)
         }
         
-        cell?.textLabel?.text = dataSource[indexPath.row].information
-        cell?.detailTextLabel?.text = dataSource[indexPath.row].address
+        cell?.informationLabel.text = dataSource[indexPath.section].information
+        cell?.locationLabel.text = dataSource[indexPath.section].address
         return cell!
     }
 }

@@ -62,7 +62,8 @@ class CoreDataManager {
        let modelURL = NSBundle.mainBundle().URLForResource("Model", withExtension: "momd")!
         return NSManagedObjectModel(contentsOfURL: modelURL)!
     }()
-    
+}
+extension CoreDataManager {
     func findAll()  -> [ShareContent]{
         var resultArray: [ShareContent] = []
         let cxt = self.managedObjectContext!
