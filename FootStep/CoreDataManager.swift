@@ -47,14 +47,22 @@ class CoreDataManager {
         
         let url = self.applicationDocumentsDirectory.URLByAppendingPathComponent("ItemModel.sqlite")
         var failureReason: String = "创建或加载应用保存数据时出错"
-        do {
-            let options: NSMutableDictionary = NSMutableDictionary()
-            options.setValue(true, forKey: NSMigratePersistentStoresAutomaticallyOption)
-            options.setValue(true, forKey: NSInferMappingModelAutomaticallyOption)
-            try coordinator?.addPersistentStoreWithType(NSSQLiteStoreType, configuration: nil, URL: url, options:  nil)
-        } catch {
-            return nil
-        }
+        var failure: Bool = true
+         repeat {
+            do {
+                let options: NSMutableDictionary = NSMutableDictionary()
+                options.setValue(true, forKey: NSMigratePersistentStoresAutomaticallyOption)
+                options.setValue(true, forKey: NSInferMappingModelAutomaticallyOption)
+                try coordinator?.addPersistentStoreWithType(NSSQLiteStoreType, configuration: nil, URL: url, options:  nil)
+                failure = false
+            } catch {
+                do {
+                    try NSFileManager.defaultManager().removeItemAtURL(url)
+                } catch {
+                    return nil
+                }
+            }
+         } while failure
         return coordinator
     }()
     
@@ -64,7 +72,7 @@ class CoreDataManager {
     }()
 }
 extension CoreDataManager {
-    func findAll()  -> [ShareContent]{
+    func findAll(completeHanlder: ((NSError)->Void)? = nil)  -> [ShareContent]{
         var resultArray: [ShareContent] = []
         let cxt = self.managedObjectContext!
         
@@ -79,7 +87,7 @@ extension CoreDataManager {
         do {
             let listData = try cxt.executeFetchRequest(fetchRequest) as! [ShareContentObject]
             for item in listData {
-                let sc: ShareContent = ShareContent()
+                let sc: ShareContent = item.toModel()
                 /* 
                 //method 1
                 sc.category = item.valueForKey("category") as! String
@@ -90,48 +98,127 @@ extension CoreDataManager {
                 sc.address = item.valueForKey("address") as! String
                 */
                 //method 2
-                sc.address = item.address!
-                sc.category = item.category!
-                sc.date = item.date!
-                sc.information = item.information!
-                sc.latitude = item.latitude as! Double
-                sc.longitude = item.longitude as! Double
+               
                 resultArray.append(sc)
             }
-        } catch {
             
+        } catch {
+            print("查询出错")
+            let err = NSError(domain: "数据库查询出错", code: 1, userInfo: nil)
+            if let handler = completeHanlder {
+                handler(err)
+            }
         }
         return resultArray
     }
     
-    func create(model: ShareContent) -> Int {
-        let cxt = self.managedObjectContext!
-        /*
-        let note = NSEntityDescription.insertNewObjectForEntityForName("ShareContentModel", inManagedObjectContext: cxt) as NSManagedObject
-        note.setValue(model.category, forKey: "category")
-        note.setValue(model.date, forKey: "date")
-        note.setValue(model.information, forKey: "information")
-        note.setValue(model.latitude, forKey: "latitude")
-        note.setValue(model.longitude, forKey: "longitude")
-        note.setValue(model.address, forKey: "address")
-        */
-        let note = NSEntityDescription.insertNewObjectForEntityForName("ShareContentModel", inManagedObjectContext: cxt) as! ShareContentObject
-        note.address = model.address
-        note.latitude = model.latitude
-        note.longitude = model.longitude
-        note.information = model.information
-        note.category = model.category
-        note.date = model.date
-        
-        if cxt.hasChanges {
-            do {
-                try cxt.save()
-                return 0
-            } catch {
-                print("插入数据失败!")
-                return -1
+    func create(model: ShareContent, completeHandler: ((NSError)-> Void)?) {
+       
+        if let cxt = self.managedObjectContext {
+            /*
+            //method 1
+            let note = NSEntityDescription.insertNewObjectForEntityForName("ShareContentModel", inManagedObjectContext: cxt) as NSManagedObject
+            note.setValue(model.category, forKey: "category")
+            note.setValue(model.date, forKey: "date")
+            note.setValue(model.information, forKey: "information")
+            note.setValue(model.latitude, forKey: "latitude")
+            note.setValue(model.longitude, forKey: "longitude")
+            note.setValue(model.address, forKey: "address")
+            */
+            let note = NSEntityDescription.insertNewObjectForEntityForName("ShareContentModel", inManagedObjectContext: cxt) as! ShareContentObject
+            note.fromModel(model)
+            
+            if cxt.hasChanges {
+                do {
+                    try cxt.save()
+                    
+                } catch {
+                    print("插入数据失败!\( __FUNCTION__) : \(__LINE__)")
+                   let err = NSError(domain: "插入数据失败", code:2,  userInfo: nil)
+                    if let handler = completeHandler {
+                        handler(err)
+                    }
+                }
             }
         }
-        return -1
+        print("获取ManaedObjectContext失败\( __FUNCTION__) : \(__LINE__)")
+        let err = NSError(domain: "获取ManaedObjectContext失败", code: 1,  userInfo: nil)
+        if let handler = completeHandler {
+            handler(err)
+        }
+    }
+    
+    func remove(model: ShareContent, completeHandler: ((NSError) -> Void)? = nil) {
+        if let ctx = self.managedObjectContext {
+            let entity = NSEntityDescription.entityForName("ShareContentModel", inManagedObjectContext: ctx)
+            let fetchRequest = NSFetchRequest()
+            fetchRequest.entity = entity
+            fetchRequest.predicate = NSPredicate(format: "date = %@", model.date)
+            do {
+                if let array = try ctx.executeFetchRequest(fetchRequest) as? [ShareContentObject] {
+                    if array.count > 0 {
+                        ctx.deleteObject(array.last!)
+                    }
+                    if ctx.hasChanges {
+                        do {
+                            try ctx.save()
+                           
+                        } catch {
+                            if let handler = completeHandler {
+                                let err = NSError(domain: "数据修改失败", code: 3 , userInfo: nil)
+                                handler(err)
+                            }
+                        }
+                    }
+                }
+            } catch {
+                print("查询出错")
+                if let handler = completeHandler {
+                    let err = NSError(domain: "查询出错", code: 2, userInfo: nil)
+                    handler(err)
+                }
+            }
+        }
+        print("获取ManaedObjectContext失败\( __FUNCTION__) : \(__LINE__)")
+        if let handler = completeHandler {
+            let error = NSError(domain: "获取ManaedObjectContext失败", code: 1, userInfo: nil)
+            handler(error)
+        }
+    }
+    
+    func modify(model:ShareContent, completeHandler: ((NSError) ->Void)? = nil) {
+        if let ctx = self.managedObjectContext {
+            let entity = NSEntityDescription.entityForName("ShareContentModel", inManagedObjectContext: ctx)
+            let fetchRequest = NSFetchRequest()
+            fetchRequest.entity = entity
+            fetchRequest.predicate = NSPredicate(format: "date = %@", model.date)
+            do {
+                if let array: [ShareContentObject] = try ctx.executeFetchRequest(fetchRequest) as? [ShareContentObject] {
+                   let m = array[0]
+                    m.fromModel(model)
+                    if ctx.hasChanges {
+                        do {
+                            try ctx.save()
+                        } catch {
+                            if let handler = completeHandler {
+                                let err = NSError(domain: "数据修改失败", code: 3 , userInfo: nil)
+                                handler(err)
+                            }
+                        }
+                    }
+                }
+            } catch {
+                print("查询出错")
+                if let handler = completeHandler {
+                    let err = NSError(domain: "查询出错", code: 2, userInfo: nil)
+                    handler(err)
+                }
+            }
+        }
+        print("获取ManaedObjectContext失败\( __FUNCTION__) : \(__LINE__)")
+        if let handler = completeHandler {
+            let error = NSError(domain: "获取ManaedObjectContext失败", code: 1, userInfo: nil)
+            handler(error)
+        }
     }
 }

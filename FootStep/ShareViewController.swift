@@ -1,4 +1,4 @@
-//
+ //
 //  ShareViewController.swift
 //  FootStep
 //
@@ -8,6 +8,10 @@
 
 import UIKit
 import CoreLocation
+enum ControllerType {
+    case Add
+    case Edit
+}
 
 class ShareViewController: UITableViewController {
 
@@ -17,11 +21,25 @@ class ShareViewController: UITableViewController {
     @IBOutlet weak var locationLabel: UILabel!
     @IBOutlet weak var timeLabel: UILabel!
     @IBOutlet weak var informationText: UITextView!
+    @IBOutlet weak var photoCell: PhotoCell!
     
     private var geocoder: CLGeocoder = CLGeocoder()
     private var locationManager: CLLocationManager?
     
     var content: ShareContent?
+    var navigationTitle: String = "添加足迹" {
+        didSet {
+            navigationItem.title = navigationTitle
+        }
+    }
+    
+    lazy var manager: CoreDataManager = CoreDataManager()
+    var saveMethod: ImageSaveMethod = .Local
+
+    var controllerType: ControllerType = .Add
+    
+    let informationPlacehold: String = "添加描述信息"
+    var imageSource: [NSURL] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -31,7 +49,11 @@ class ShareViewController: UITableViewController {
 
     
     override func viewWillAppear(animated: Bool) {
-        updateLoacation()
+        if let _ = content {
+            loadInfomation()
+        } else {
+            updateLoacation()
+        }
     }
     
     func addTouchHandler() {
@@ -50,16 +72,39 @@ class ShareViewController: UITableViewController {
         }
     }
     func loadInfomation() {
+       
         let formatter = NSDateFormatter()
         formatter.dateStyle = .MediumStyle
         formatter.timeStyle = .ShortStyle
-        timeLabel.text = formatter.stringFromDate(NSDate())
-        locationLabel.text = content?.information
+       
         if let cnt = content {
             let lo = cnt.longitude
             let la = cnt.latitude
             longitudeLabel.text = String(format: "%.4f", lo)
             latitudeLabel.text = String(format: "%.4f", la)
+            if cnt.information == "" {
+                informationText.text = informationPlacehold
+                informationText.textColor = UIColor.grayColor()
+            } else {
+                informationText.text = cnt.information
+                informationText.textColor = UIColor.blackColor()
+            }
+            selectCategory.text = cnt.category
+            timeLabel.text = formatter.stringFromDate(cnt.date)
+            locationLabel.text = cnt.address
+            
+            let urlStrings = cnt.photoPaths.componentsSeparatedByString(";")
+            if urlStrings.count > 0 && !urlStrings[0].isEmpty{
+                imageSource = urlStrings.map() {
+                        return NSURL(string: $0)!
+                }
+                photoCell.style = .Media
+                for url in imageSource {
+                    photoCell.addImageWithUrl(url)
+                }
+                photoCell.autoLayoutButtons()
+            }
+            
         }
     }
     
@@ -90,7 +135,11 @@ class ShareViewController: UITableViewController {
     
     @IBAction func unwindToShareViewController(segue: UIStoryboardSegue) {
         if let svc = segue.sourceViewController as? CategorySelectViewController {
-            selectCategory.text = svc.selectText
+            if let cnt = content {
+                cnt.category = svc.selectText!
+                loadInfomation()
+            }
+            
         }
     }
     
@@ -99,6 +148,18 @@ class ShareViewController: UITableViewController {
     override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         guard indexPath.section == 1 else {return}
         showActionSheet()
+    }
+    
+  
+    
+    override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+        if indexPath.section == 1 {
+            return photoCell.rowHeight
+        } else if indexPath == NSIndexPath(forRow: 0, inSection: 0) {
+            return 120
+        } else {
+            return 44
+        }
     }
     
     func showActionSheet() {
@@ -110,32 +171,71 @@ class ShareViewController: UITableViewController {
         if let sender = sender {
             if sender.isKindOfClass(UIBarButtonItem) {
                 if sender.tag > 0 {
+                    saveInformation()
                     saveShareContent()
                 }
             } else if sender.isKindOfClass(UITableViewCell) {
                 if let dvc = segue.destinationViewController as? CategorySelectViewController {
-                    dvc.selectText = selectCategory.text
+                    if let cnt = content {
+                        if let information = informationText.text {
+                            cnt.information = information == informationPlacehold ? "" : information
+                        }
+                        dvc.selectText = cnt.category
+                        
+                    }
                 }
             }
         }
     }
     
-    //保存到本地
+    func     saveInformation() {
+        if let cnt = content {
+            if let information = informationText.text {
+                cnt.information = information == informationPlacehold ? "" : information
+                cnt.category = selectCategory.text!
+                cnt.photoPaths = imageSource.map(){ return $0.absoluteString }.joinWithSeparator(";")
+            }
+        }
+    }
+        //保存到本地
     func saveShareContent() {
-        let manager = CoreDataManager()
-        let shareContent: ShareContent = ShareContent()
-        shareContent.address = locationLabel.text!
-        shareContent.category = selectCategory.text!
-        shareContent.date = NSDate()
-        shareContent.information = informationText.text ?? ""
-        manager.create(shareContent)
+        if let shareContent = content {
+            switch controllerType {
+            case .Add:
+                manager.create(shareContent) { error in
+                    print(error)
+                }
+            case .Edit:
+                manager.modify(shareContent) { error in
+                    print(error)
+                }
+            }
+            
+        }
+    }
+    
+    func updateCollectionCell() {
+        if imageSource.count > 0 {
+            photoCell.style = PhotoCellStyle.Media
+            if let url  = imageSource.last {
+                photoCell.addImageWithUrl(url)
+            }
+        }
+    }
+    
+    func removeShareContent() {
+        if let shareContent = content {
+            manager.remove(shareContent) { error in
+               print(error)                
+            }
+        }
     }
 
 }
 
 extension ShareViewController: UITextViewDelegate {
     func textViewDidBeginEditing(textView: UITextView) {
-        if textView.text == "添加描述信息" {
+        if textView.text == informationPlacehold {
             textView.text = ""
             textView.textColor = UIColor.blackColor()
         }
@@ -154,7 +254,7 @@ extension ShareViewController: UIActionSheetDelegate {
         default:break
         }
     }
-    
+
     func  takePhoto() {
         let sourceType: UIImagePickerControllerSourceType = .Camera
         if UIImagePickerController.isSourceTypeAvailable(sourceType) {
@@ -180,18 +280,72 @@ extension ShareViewController: UIActionSheetDelegate {
     }
 }
 
+enum ImageSaveMethod {
+    case Local
+    case Remote
+}
 extension ShareViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    
+    func saveSelectedImage(image: UrlImage?, completeHandler: ((NSURL?)->Void)? = nil) {
+        switch saveMethod {
+        case .Local:
+            saveImageLocal(image) { url in
+                if let handler = completeHandler {
+                    handler(url)
+                }
+            }
+        case .Remote:
+            saveImageRemote(image) { url in
+                if let handler = completeHandler {
+                    handler(url)
+                }
+            }
+        }
+    }
+    //MARK:  保存图片到本地并获取到URL
+    func saveImageLocal(image: UrlImage?, completeHandler: ((NSURL?) -> Void)? = nil) {
+        if let handler = completeHandler {
+         
+                let id = AutoIncreasement.shareInstance.next()
+                let url = manager.applicationDocumentsDirectory.URLByAppendingPathComponent("foot_photo_\(id).png")
+                if let img = image?.image {
+                    let data = UIImagePNGRepresentation(img)
+                    data?.writeToURL(url, atomically: true)
+                    handler(url)
+            }
+        }
+        
+    }
+    //MARK: 保存呢图片到远程服务器并获取URL, 暂未实现
+    func saveImageRemote(image: UrlImage?, completeHandler: ((NSURL?)->Void)? = nil) {
+        
+    }
+    
     func imagePickerController(picker: UIImagePickerController, didFinishPickingImage image: UIImage, editingInfo: [String : AnyObject]?) {
         
     }
     
     func imagePickerController(picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : AnyObject]) {
         print(info)
+        
         let type = info[UIImagePickerControllerMediaType] as? String
         if type == "public.image" {
-            
+            if let image = info[UIImagePickerControllerEditedImage] as? UIImage {
+                let urlImage = UrlImage()
+                urlImage.image = image
+                urlImage.url = info[UIImagePickerControllerReferenceURL] as? NSURL  //去得到URL,说明是本地相册取图片，否则为拍照
+                saveSelectedImage(urlImage) { url in
+                    guard let url = url else {return}
+                    guard !self.imageSource.contains(url) else { return }
+                    self.imageSource.append(url)
+                    self.saveInformation()
+                    self.updateCollectionCell()
+                }
+                
+            }
         }
         picker.dismissViewControllerAnimated(true, completion: nil)
+        
     }
     
     func imagePickerControllerDidCancel(picker: UIImagePickerController) {
@@ -199,7 +353,10 @@ extension ShareViewController: UIImagePickerControllerDelegate, UINavigationCont
         picker.dismissViewControllerAnimated(true, completion: nil)
     }
 }
-
+class UrlImage {
+    var image: UIImage?
+    var url: NSURL?
+}
 extension ShareViewController: UIGestureRecognizerDelegate {
     func gestureRecognizer(gestureRecognizer: UIGestureRecognizer, shouldReceiveTouch touch: UITouch) -> Bool {
         guard let view = touch .view else { return  false}
@@ -220,19 +377,22 @@ extension ShareViewController: CLLocationManagerDelegate {
                 content?.latitude = ln.coordinate.latitude
                 content?.longitude = ln.coordinate.longitude
                 content?.date = NSDate()
+                content?.category = "未分类"
+                content?.information = ""
                 geocoder.reverseGeocodeLocation(ln) { (placemarks, error) -> Void in
                     if let e = error {
                         print(e.debugDescription)
                     } else {
                         if let ps = placemarks {
                             let pm = ps[0]
-                            self.content?.information = pm.name!
+                            self.content?.address = pm.name!
                         }
                     }
                     self.loadInfomation()
                 }
             }
         }
+        
     }
     
     func locationManager(manager: CLLocationManager, didFailWithError error: NSError) {

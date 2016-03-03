@@ -12,6 +12,27 @@ import CoreData
 @objc(ShareContentObject)
 class ShareContentObject: NSManagedObject {
 
-// Insert code here to add functionality to your managed object subclass
-
+    func fromModel(model: ShareContent) {
+        address = model.address
+        category = model.category
+        date = model.date
+        information = model.information
+        latitude = model.latitude
+        longitude = model.longitude
+        photoPaths = model.photoPaths
+    }
+    
+    func toModel() -> ShareContent {
+        let model: ShareContent = ShareContent()
+        model.address = address ?? ""
+        model.category = category ?? "未分类"
+        model.date = date ?? NSDate()
+        model.information = information ?? ""
+        model.latitude = latitude?.doubleValue ?? 0
+        model.longitude = longitude?.doubleValue ?? 0
+        model.photoPaths = photoPaths ?? ""
+        return model
+    }
 }
+
+

@@ -43,6 +43,16 @@ class MoreViewController: UIViewController {
     func dataSourceUpdate() {
             dataSource = coreDataManager.findAll()
     }
+    
+    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        guard let cell = sender as? ShareCell, let dvc = segue.destinationViewController as? ShareViewController else { return  }
+        dvc.navigationTitle = "详情页"
+        dvc.controllerType = ControllerType.Edit
+        if let indexPath = tableView.indexPathForCell(cell) {
+            let shareContent = dataSource[indexPath.section]
+            dvc.content = shareContent
+        }
+    }
   
 }
 
@@ -73,4 +83,29 @@ extension MoreViewController: UITableViewDelegate, UITableViewDataSource {
         cell?.locationLabel.text = dataSource[indexPath.section].address
         return cell!
     }
+    
+    func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
+        return true
+    }
+    
+    func tableView(tableView: UITableView, editingStyleForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCellEditingStyle {
+        return .Delete
+    }
+    
+    func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
+        switch editingStyle {
+        case .Delete:
+            removeShareContent(forRowAtIndexPath: indexPath)
+        default:break
+        }
+    }
+    
+    func removeShareContent(forRowAtIndexPath indexPath: NSIndexPath) {
+        let index = indexPath.section
+        let shareContent = dataSource[index]
+        let manager = CoreDataManager()
+        manager.remove(shareContent)
+        tableViewReloadData()
+    }
+
 }
